@@ -52,7 +52,7 @@ pipeline {
             REMOTE_HOST_IP='192.168.37.134'
             REMOTE_HOST_USER='root'
             REMOTE_HOST_PWD='123456'
-            HARBOR_HOST='192.168.37.134'
+            NEXUS_BIND_IP='192.168.37.134'
             NEXUS_PORT='8082'
           }
 
