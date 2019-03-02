@@ -1,7 +1,7 @@
 pipeline {
   agent any
   environment {
-    PACKAGE_REPO_DIR=''
+    PACKAGE_REPO_DIR='/home/cloud/package'
     INSTALL_HARBOR_FLAG='true'
     INSTALL_NEXUS_FLAG='true'
 
