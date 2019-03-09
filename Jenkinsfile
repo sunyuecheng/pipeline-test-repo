@@ -1,28 +1,37 @@
 pipeline {
   agent any
+  environment {
+    PACKAGE_REPO_DIR='/home/cloud/package'
+    INSTALL_HARBOR_FLAG='true'
+    INSTALL_NEXUS_FLAG='true'
+
+  }
+
   stages {
     stage('repo') {
       parallel {
         stage('install harbor') {
+          environment {
+            REMOTE_HOST_IP='192.168.37.151'
+            REMOTE_HOST_USER='root'
+            REMOTE_HOST_PWD='123456'
+            HARBOR_HOST='192.168.37.151'
+            HARBOR_SSH_FLAG='false'
+          }
+
           when {
             not {
               environment name: 'INSTALL_HARBOR_FLAG', value: 'false'
             }
+          }
 
-          }
-          environment {
-            REMOTE_HOST_IP = '192.168.37.151'
-            REMOTE_HOST_USER = 'root'
-            REMOTE_HOST_PWD = '123456'
-            HARBOR_HOST = '192.168.37.151'
-            HARBOR_SSH_FLAG = 'false'
-          }
           steps {
             sh '''cd ./install/harbor-install; \\
                   echo "PACKAGE_REPO_DIR=${PACKAGE_REPO_DIR}" >> config.properties; \\
                   sh install.sh --package; \\
                   echo "HARBOR_HOST=${HARBOR_HOST}" >> config.properties; \\
                   echo "HARBOR_SSH_FLAG=${HARBOR_SSH_FLAG}" >> config.properties'''
+
             script {
               def host = [:]
               host.name = 'habor'
@@ -35,23 +44,25 @@ pipeline {
               sshPut remote:host, from:"./install/harbor-install", into:"."
               sshCommand remote:host, command:"cd ~/harbor-install;sh install.sh --install"
             }
-
+            
           }
         }
+
         stage('install nexus') {
+          environment {
+            REMOTE_HOST_IP='192.168.37.151'
+            REMOTE_HOST_USER='root'
+            REMOTE_HOST_PWD='123456'
+            NEXUS_BIND_IP='192.168.37.151'
+            NEXUS_PORT='8082'
+          }
+
           when {
             not {
               environment name: 'INSTALL_NEXUS_FLAG', value: 'false'
             }
+          }
 
-          }
-          environment {
-            REMOTE_HOST_IP = '192.168.37.151'
-            REMOTE_HOST_USER = 'root'
-            REMOTE_HOST_PWD = '123456'
-            NEXUS_BIND_IP = '192.168.37.151'
-            NEXUS_PORT = '8082'
-          }
           steps {
             sh '''cd ./install/maven-install; \\
                   echo "PACKAGE_REPO_DIR=${PACKAGE_REPO_DIR}" >> config.properties; \\
@@ -61,6 +72,7 @@ pipeline {
                   sh install.sh --package; \\
                   echo "NEXUS_BIND_IP=${NEXUS_BIND_IP}" >> config.properties; \\
                   echo "NEXUS_PORT=${NEXUS_PORT}" >> config.properties'''
+
             script {
               def host = [:]
               host.name = 'nexus'
@@ -82,15 +94,9 @@ pipeline {
               sshPut remote:host, from:"./install/nexus-install", into:"."
               sshCommand remote:host, command:"cd ~/nexus-install;sh install.sh --install"
             }
-
           }
         }
       }
     }
-  }
-  environment {
-    PACKAGE_REPO_DIR = '/home/cloud/package'
-    INSTALL_HARBOR_FLAG = 'true'
-    INSTALL_NEXUS_FLAG = 'true'
   }
 }
